@@ -9,9 +9,7 @@
 * 🟢 You can import this file directly.
 */
 
-export const LineStatus = {
-  online: 'online',
-  offline: 'offline'
-} as const
 
-export type LineStatus = (typeof LineStatus)[keyof typeof LineStatus]
+
+// This file is empty because there are no enums in the schema.
+export {}

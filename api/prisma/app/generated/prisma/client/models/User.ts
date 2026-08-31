@@ -27,19 +27,19 @@ export type AggregateUser = {
 export type UserMinAggregateOutputType = {
   id: string | null
   name: string | null
-  lineStatus: $Enums.LineStatus | null
+  createdAt: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
   id: string | null
   name: string | null
-  lineStatus: $Enums.LineStatus | null
+  createdAt: Date | null
 }
 
 export type UserCountAggregateOutputType = {
   id: number
   name: number
-  lineStatus: number
+  createdAt: number
   _all: number
 }
 
@@ -47,19 +47,19 @@ export type UserCountAggregateOutputType = {
 export type UserMinAggregateInputType = {
   id?: true
   name?: true
-  lineStatus?: true
+  createdAt?: true
 }
 
 export type UserMaxAggregateInputType = {
   id?: true
   name?: true
-  lineStatus?: true
+  createdAt?: true
 }
 
 export type UserCountAggregateInputType = {
   id?: true
   name?: true
-  lineStatus?: true
+  createdAt?: true
   _all?: true
 }
 
@@ -138,7 +138,7 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type UserGroupByOutputType = {
   id: string
   name: string
-  lineStatus: $Enums.LineStatus
+  createdAt: Date
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -165,28 +165,34 @@ export type UserWhereInput = {
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   id?: Prisma.StringFilter<"User"> | string
   name?: Prisma.StringFilter<"User"> | string
-  lineStatus?: Prisma.EnumLineStatusFilter<"User"> | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  wordSearches?: Prisma.WordSearchListRelationFilter
+  wordles?: Prisma.WordleListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  lineStatus?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  wordSearches?: Prisma.WordSearchOrderByRelationAggregateInput
+  wordles?: Prisma.WordleOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  name?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
-  name?: Prisma.StringFilter<"User"> | string
-  lineStatus?: Prisma.EnumLineStatusFilter<"User"> | $Enums.LineStatus
-}, "id">
+  createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  wordSearches?: Prisma.WordSearchListRelationFilter
+  wordles?: Prisma.WordleListRelationFilter
+}, "id" | "name">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  lineStatus?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -198,112 +204,292 @@ export type UserScalarWhereWithAggregatesInput = {
   NOT?: Prisma.UserScalarWhereWithAggregatesInput | Prisma.UserScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"User"> | string
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
-  lineStatus?: Prisma.EnumLineStatusWithAggregatesFilter<"User"> | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
 
 export type UserCreateInput = {
   id?: string
   name: string
-  lineStatus: $Enums.LineStatus
+  createdAt?: Date | string
+  wordSearches?: Prisma.WordSearchCreateNestedManyWithoutCreatorInput
+  wordles?: Prisma.WordleCreateNestedManyWithoutCreatorInput
 }
 
 export type UserUncheckedCreateInput = {
   id?: string
   name: string
-  lineStatus: $Enums.LineStatus
+  createdAt?: Date | string
+  wordSearches?: Prisma.WordSearchUncheckedCreateNestedManyWithoutCreatorInput
+  wordles?: Prisma.WordleUncheckedCreateNestedManyWithoutCreatorInput
 }
 
 export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  lineStatus?: Prisma.EnumLineStatusFieldUpdateOperationsInput | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordSearches?: Prisma.WordSearchUpdateManyWithoutCreatorNestedInput
+  wordles?: Prisma.WordleUpdateManyWithoutCreatorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  lineStatus?: Prisma.EnumLineStatusFieldUpdateOperationsInput | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordSearches?: Prisma.WordSearchUncheckedUpdateManyWithoutCreatorNestedInput
+  wordles?: Prisma.WordleUncheckedUpdateManyWithoutCreatorNestedInput
 }
 
 export type UserCreateManyInput = {
   id?: string
   name: string
-  lineStatus: $Enums.LineStatus
+  createdAt?: Date | string
 }
 
 export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  lineStatus?: Prisma.EnumLineStatusFieldUpdateOperationsInput | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  lineStatus?: Prisma.EnumLineStatusFieldUpdateOperationsInput | $Enums.LineStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  lineStatus?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  lineStatus?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  lineStatus?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+}
+
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type EnumLineStatusFieldUpdateOperationsInput = {
-  set?: $Enums.LineStatus
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
+export type UserCreateNestedOneWithoutWordSearchesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWordSearchesInput, Prisma.UserUncheckedCreateWithoutWordSearchesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWordSearchesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWordSearchesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWordSearchesInput, Prisma.UserUncheckedCreateWithoutWordSearchesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWordSearchesInput
+  upsert?: Prisma.UserUpsertWithoutWordSearchesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWordSearchesInput, Prisma.UserUpdateWithoutWordSearchesInput>, Prisma.UserUncheckedUpdateWithoutWordSearchesInput>
+}
+
+export type UserCreateNestedOneWithoutWordlesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWordlesInput, Prisma.UserUncheckedCreateWithoutWordlesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWordlesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutWordlesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutWordlesInput, Prisma.UserUncheckedCreateWithoutWordlesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutWordlesInput
+  upsert?: Prisma.UserUpsertWithoutWordlesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWordlesInput, Prisma.UserUpdateWithoutWordlesInput>, Prisma.UserUncheckedUpdateWithoutWordlesInput>
+}
+
+export type UserCreateWithoutWordSearchesInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  wordles?: Prisma.WordleCreateNestedManyWithoutCreatorInput
+}
+
+export type UserUncheckedCreateWithoutWordSearchesInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  wordles?: Prisma.WordleUncheckedCreateNestedManyWithoutCreatorInput
+}
+
+export type UserCreateOrConnectWithoutWordSearchesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWordSearchesInput, Prisma.UserUncheckedCreateWithoutWordSearchesInput>
+}
+
+export type UserUpsertWithoutWordSearchesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWordSearchesInput, Prisma.UserUncheckedUpdateWithoutWordSearchesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWordSearchesInput, Prisma.UserUncheckedCreateWithoutWordSearchesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWordSearchesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWordSearchesInput, Prisma.UserUncheckedUpdateWithoutWordSearchesInput>
+}
+
+export type UserUpdateWithoutWordSearchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordles?: Prisma.WordleUpdateManyWithoutCreatorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWordSearchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordles?: Prisma.WordleUncheckedUpdateManyWithoutCreatorNestedInput
+}
+
+export type UserCreateWithoutWordlesInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  wordSearches?: Prisma.WordSearchCreateNestedManyWithoutCreatorInput
+}
+
+export type UserUncheckedCreateWithoutWordlesInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  wordSearches?: Prisma.WordSearchUncheckedCreateNestedManyWithoutCreatorInput
+}
+
+export type UserCreateOrConnectWithoutWordlesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutWordlesInput, Prisma.UserUncheckedCreateWithoutWordlesInput>
+}
+
+export type UserUpsertWithoutWordlesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutWordlesInput, Prisma.UserUncheckedUpdateWithoutWordlesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutWordlesInput, Prisma.UserUncheckedCreateWithoutWordlesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutWordlesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutWordlesInput, Prisma.UserUncheckedUpdateWithoutWordlesInput>
+}
+
+export type UserUpdateWithoutWordlesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordSearches?: Prisma.WordSearchUpdateManyWithoutCreatorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutWordlesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  wordSearches?: Prisma.WordSearchUncheckedUpdateManyWithoutCreatorNestedInput
+}
+
+
+/**
+ * Count Type UserCountOutputType
+ */
+
+export type UserCountOutputType = {
+  wordSearches: number
+  wordles: number
+}
+
+export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  wordSearches?: boolean | UserCountOutputTypeCountWordSearchesArgs
+  wordles?: boolean | UserCountOutputTypeCountWordlesArgs
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserCountOutputType
+   */
+  select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWordSearchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WordSearchWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountWordlesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WordleWhereInput
+}
 
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  lineStatus?: boolean
+  createdAt?: boolean
+  wordSearches?: boolean | Prisma.User$wordSearchesArgs<ExtArgs>
+  wordles?: boolean | Prisma.User$wordlesArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  lineStatus?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  lineStatus?: boolean
+  createdAt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
   id?: boolean
   name?: boolean
-  lineStatus?: boolean
+  createdAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "lineStatus", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "createdAt", ExtArgs["result"]["user"]>
+export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  wordSearches?: boolean | Prisma.User$wordSearchesArgs<ExtArgs>
+  wordles?: boolean | Prisma.User$wordlesArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
-  objects: {}
+  objects: {
+    wordSearches: Prisma.$WordSearchPayload<ExtArgs>[]
+    wordles: Prisma.$WordlePayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
-    lineStatus: $Enums.LineStatus
+    createdAt: Date
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -698,6 +884,8 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  wordSearches<T extends Prisma.User$wordSearchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$wordSearchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WordSearchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  wordles<T extends Prisma.User$wordlesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$wordlesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WordlePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -729,7 +917,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface UserFieldRefs {
   readonly id: Prisma.FieldRef<"User", 'String'>
   readonly name: Prisma.FieldRef<"User", 'String'>
-  readonly lineStatus: Prisma.FieldRef<"User", 'LineStatus'>
+  readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 
@@ -746,6 +934,10 @@ export type UserFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * Filter, which User to fetch.
    */
@@ -765,6 +957,10 @@ export type UserFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter, which User to fetch.
    */
   where: Prisma.UserWhereUniqueInput
@@ -782,6 +978,10 @@ export type UserFindFirstArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * Filter, which User to fetch.
    */
@@ -831,6 +1031,10 @@ export type UserFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter, which User to fetch.
    */
   where?: Prisma.UserWhereInput
@@ -878,6 +1082,10 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * Filter, which Users to fetch.
    */
@@ -927,6 +1135,10 @@ export type UserCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * The data needed to create a User.
    */
   data: Prisma.XOR<Prisma.UserCreateInput, Prisma.UserUncheckedCreateInput>
@@ -974,6 +1186,10 @@ export type UserUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * The data needed to update a User.
    */
@@ -1041,6 +1257,10 @@ export type UserUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * The filter to search for the User to update in case it exists.
    */
   where: Prisma.UserWhereUniqueInput
@@ -1067,6 +1287,10 @@ export type UserDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter which User to delete.
    */
   where: Prisma.UserWhereUniqueInput
@@ -1087,6 +1311,54 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
+ * User.wordSearches
+ */
+export type User$wordSearchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WordSearch
+   */
+  select?: Prisma.WordSearchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WordSearch
+   */
+  omit?: Prisma.WordSearchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WordSearchInclude<ExtArgs> | null
+  where?: Prisma.WordSearchWhereInput
+  orderBy?: Prisma.WordSearchOrderByWithRelationInput | Prisma.WordSearchOrderByWithRelationInput[]
+  cursor?: Prisma.WordSearchWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WordSearchScalarFieldEnum | Prisma.WordSearchScalarFieldEnum[]
+}
+
+/**
+ * User.wordles
+ */
+export type User$wordlesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Wordle
+   */
+  select?: Prisma.WordleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Wordle
+   */
+  omit?: Prisma.WordleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WordleInclude<ExtArgs> | null
+  where?: Prisma.WordleWhereInput
+  orderBy?: Prisma.WordleOrderByWithRelationInput | Prisma.WordleOrderByWithRelationInput[]
+  cursor?: Prisma.WordleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WordleScalarFieldEnum | Prisma.WordleScalarFieldEnum[]
+}
+
+/**
  * User without action
  */
 export type UserDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1098,4 +1370,8 @@ export type UserDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
 }

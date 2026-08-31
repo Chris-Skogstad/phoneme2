@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client"
-  output          = "app/generated/prisma/client"
+  provider = "prisma-client"
+  output   = "app/generated/prisma/client"
 }
 
 datasource db {
@@ -11,12 +11,45 @@ datasource db {
 }
 
 model User {
-  id         String     @id @default(uuid())
-  name       String
-  lineStatus LineStatus
+  id           String       @id @default(uuid())
+  name         String       @unique
+  wordSearches WordSearch[]
+  wordles      Wordle[]
+  createdAt    DateTime     @default(now())
 }
 
-enum LineStatus {
-  online
-  offline
+model Word {
+  id           String       @id @default(uuid())
+  text         String
+  locale       String
+  phonemes     String[]
+  hint         String?
+  createdAt    DateTime     @default(now())
+  wordSearches WordSearch[] @relation("WordSearchWords")
+  wordles      Wordle[]     @relation("WordleWords")
+
+  @@unique([text, locale])
+}
+
+model WordSearch {
+  id             String   @id @default(uuid())
+  title          String
+  difficulty     String
+  gridSize       Int
+  outputSettings Json?
+  words          Word[]   @relation("WordSearchWords")
+  creator        User     @relation(fields: [creatorId], references: [id])
+  creatorId      String
+  createdAt      DateTime @default(now())
+}
+
+model Wordle {
+  id             String   @id @default(uuid())
+  title          String
+  difficulty     String
+  outputSettings Json?
+  words          Word[]   @relation("WordleWords")
+  creator        User     @relation(fields: [creatorId], references: [id])
+  creatorId      String
+  createdAt      DateTime @default(now())
 }
