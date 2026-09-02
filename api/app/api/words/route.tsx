@@ -59,3 +59,45 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Invalid request body', { status: 400, headers: corsHeaders });
   }
 }
+// PATCH – update a word by ID (?id=uuid)
+export async function PATCH(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) {
+      return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
+    }
+
+    const { text, locale, phonemes, hint } = await request.json();
+
+    if (phonemes !== undefined) {
+      if (!Array.isArray(phonemes) || phonemes.length === 0) {
+        return new NextResponse('"phonemes" must be a non-empty array', { status: 400, headers: corsHeaders });
+      }
+      const invalidPhoneme = phonemes.find((p: string) => !(p in phonemeLegend));
+      if (invalidPhoneme) {
+        return new NextResponse(`Unknown phoneme symbol: "${invalidPhoneme}"`, { status: 400, headers: corsHeaders });
+      }
+    }
+
+    const updated = await prisma.word.update({
+      where: { id },
+      data: {
+        ...(text !== undefined && { text }),
+        ...(locale !== undefined && { locale }),
+        ...(phonemes !== undefined && { phonemes }),
+        ...(hint !== undefined && { hint }),
+      },
+    });
+
+    return NextResponse.json(updated, { headers: corsHeaders });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return new NextResponse('Word not found', { status: 404, headers: corsHeaders });
+    }
+    if (error?.code === 'P2002') {
+      return new NextResponse('Word already exists for this locale', { status: 409, headers: corsHeaders });
+    }
+    console.error(error);
+    return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
+  }
+}
