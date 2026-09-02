@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Invalid request body', { status: 400, headers: corsHeaders });
   }
 }
+
+
 // PATCH – update a word by ID (?id=uuid)
 export async function PATCH(request: NextRequest) {
   try {
@@ -96,6 +98,27 @@ export async function PATCH(request: NextRequest) {
     }
     if (error?.code === 'P2002') {
       return new NextResponse('Word already exists for this locale', { status: 409, headers: corsHeaders });
+    }
+    console.error(error);
+    return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
+  }
+}
+
+
+// DELETE – delete a word by ID (?id=uuid)
+export async function DELETE(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) {
+      return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
+    }
+
+    await prisma.word.delete({ where: { id } });
+
+    return new NextResponse(null, { status: 204, headers: corsHeaders });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return new NextResponse('Word not found', { status: 404, headers: corsHeaders });
     }
     console.error(error);
     return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
