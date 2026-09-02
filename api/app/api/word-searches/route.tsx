@@ -122,3 +122,24 @@ export async function PATCH(request: NextRequest) {
     return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
   }
 }
+
+
+// DELETE – delete a word search by ID (?id=uuid)
+export async function DELETE(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) {
+      return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
+    }
+
+    await prisma.wordSearch.delete({ where: { id } });
+
+    return new NextResponse(null, { status: 204, headers: corsHeaders });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return new NextResponse('WordSearch not found', { status: 404, headers: corsHeaders });
+    }
+    console.error(error);
+    return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
+  }
+}
