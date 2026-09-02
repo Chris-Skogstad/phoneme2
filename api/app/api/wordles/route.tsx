@@ -118,3 +118,24 @@ export async function PATCH(request: NextRequest) {
     return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
   }
 }
+
+
+// DELETE – delete a wordle by ID (?id=uuid)
+export async function DELETE(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) {
+      return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
+    }
+
+    await prisma.wordle.delete({ where: { id } });
+
+    return new NextResponse(null, { status: 204, headers: corsHeaders });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return new NextResponse('Wordle not found', { status: 404, headers: corsHeaders });
+    }
+    console.error(error);
+    return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
+  }
+}
