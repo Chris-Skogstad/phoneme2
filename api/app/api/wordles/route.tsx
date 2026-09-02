@@ -84,3 +84,37 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Invalid request body', { status: 400, headers: corsHeaders });
   }
 }
+
+
+// PATCH – update a wordle by ID (?id=uuid)
+export async function PATCH(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) {
+      return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
+    }
+
+    const { title, difficulty, wordIds, outputSettings } = await request.json();
+
+    const updated = await prisma.wordle.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(difficulty !== undefined && { difficulty }),
+        ...(outputSettings !== undefined && { outputSettings }),
+        ...(wordIds !== undefined && {
+          words: { set: wordIds.map((wid: string) => ({ id: wid })) },
+        }),
+      },
+      include: { words: true, creator: true },
+    });
+
+    return NextResponse.json(updated, { headers: corsHeaders });
+  } catch (error: any) {
+    if (error?.code === 'P2025') {
+      return new NextResponse('Wordle not found', { status: 404, headers: corsHeaders });
+    }
+    console.error(error);
+    return new NextResponse('Invalid request', { status: 400, headers: corsHeaders });
+  }
+}
