@@ -27,6 +27,12 @@ const difficultyOptions = (
 export default function WordlePage() {
   const { locale } = useLocale();
 
+  const [creatorName, setCreatorName] = useState("");
+const [title, setTitle] = useState("");
+const [saving, setSaving] = useState(false);
+const [saveError, setSaveError] = useState<string | null>(null);
+const [saveSuccess, setSaveSuccess] = useState(false);
+
   const [bankWords, setBankWords] = useState<BankWord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wordsLoading, setWordsLoading] = useState(true);
@@ -74,6 +80,50 @@ export default function WordlePage() {
       setCurrentGuess((prev) => [...prev, token]);
     }
   };
+
+  const handleSave = async () => {
+  setSaveError(null);
+  setSaveSuccess(false);
+
+  if (!title.trim()) {
+    setSaveError("Please enter a title for this Wordle.");
+    return;
+  }
+  if (!creatorName.trim()) {
+    setSaveError("Please enter your name.");
+    return;
+  }
+  if (!selectedId) {
+    setSaveError("Select a target word first.");
+    return;
+  }
+
+  setSaving(true);
+  try {
+    const res = await fetch(`${APIURL}/api/wordles`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: title.trim(),
+        difficulty,
+        wordIds: [selectedId],
+        creatorName: creatorName.trim(),
+      }),
+    });
+
+    if (!res.ok) {
+      setSaveError(await res.text());
+      return;
+    }
+
+    setSaveSuccess(true);
+  } catch (err) {
+    console.error(err);
+    setSaveError("Could not reach the server.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleBackspace = () => {
     if (status !== "playing") return;
@@ -140,28 +190,55 @@ export default function WordlePage() {
         onChange={setDifficulty}
       />
 
-      <div className="w-full max-w-lg mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Target word
-        </h3>
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
-          {bankWords.length === 0 && (
-            <p className="text-gray-500 text-sm">
-              No words in the bank yet for this locale — add some on the Word Bank page.
-            </p>
-          )}
-          {bankWords.map((w) => (
-            <label key={w.id} className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
-              <input
-                type="radio"
-                name="wordleTarget"
-                checked={selectedId === w.id}
-                onChange={() => selectWord(w.id)}
-              />
-              <span className="font-medium">{w.text}</span>
-              <span className="text-gray-500">({w.phonemes.join(" ")})</span>
-            </label>
-          ))}
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-start justify-items-center mt-6 mb-8">
+        <div className="w-full max-w-lg">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Target word
+          </h3>
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+            {bankWords.length === 0 && (
+              <p className="text-gray-500 text-sm">
+                No words in the bank yet for this locale — add some on the Word Bank page.
+              </p>
+            )}
+            {bankWords.map((w) => (
+              <label key={w.id} className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                <input
+                  type="radio"
+                  name="wordleTarget"
+                  checked={selectedId === w.id}
+                  onChange={() => selectWord(w.id)}
+                />
+                <span className="font-medium">{w.text}</span>
+                <span className="text-gray-500">({w.phonemes.join(" ")})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="w-full max-w-lg flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Save this Wordle</h3>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title (e.g. 'Sh Sound Wordle')"
+            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            disabled={saving}
+          />
+          <input
+            type="text"
+            value={creatorName}
+            onChange={(e) => setCreatorName(e.target.value)}
+            placeholder="Your name"
+            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            disabled={saving}
+          />
+          <Button variant="primary" onClick={handleSave} disabled={saving || !selectedId}>
+            {saving ? "Saving..." : "Save Wordle"}
+          </Button>
+          {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
+          {saveSuccess && <p className="text-green-500 text-sm">Saved!</p>}
         </div>
       </div>
 
