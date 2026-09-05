@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   generateGrid,
   WordSearchGrid,
@@ -28,8 +29,10 @@ const difficultyOptions = (Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map
   (key) => ({ value: key, label: DIFFICULTY_SETTINGS[key].label })
 );
 
-export default function WordSearchPage() {
+function WordSearchPageInner() {
   const { locale } = useLocale();
+  const searchParams = useSearchParams();
+  const loadId = searchParams.get("id");
 
   const [bankWords, setBankWords] = useState<BankWord[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -52,11 +55,26 @@ export default function WordSearchPage() {
       .then((res) => res.json())
       .then((data: BankWord[]) => {
         setBankWords(data);
-        setSelectedIds(new Set(data.map((w) => w.id))); // default: all selected
+        if (!loadId) {
+          setSelectedIds(new Set(data.map((w) => w.id))); // default: all selected
+        }
       })
       .catch((err) => console.error("Error fetching words:", err))
       .finally(() => setWordsLoading(false));
-  }, [locale]);
+  }, [locale, loadId]);
+
+  // if loading a saved activity, fetch it and apply its selection/settings
+  useEffect(() => {
+    if (!loadId) return;
+    fetch(`${APIURL}/api/word-searches?id=${loadId}`)
+      .then((res) => res.json())
+      .then((data: { title: string; difficulty: Difficulty; words: { id: string }[] }) => {
+        setTitle(data.title);
+        setDifficulty(data.difficulty);
+        setSelectedIds(new Set(data.words.map((w) => w.id)));
+      })
+      .catch((err) => console.error("Error loading saved activity:", err));
+  }, [loadId]);
 
   const selectedWords = bankWords
     .filter((w) => selectedIds.has(w.id))
@@ -276,5 +294,13 @@ export default function WordSearchPage() {
         </Button>
       </div>
     </main>
+  );
+}
+
+export default function WordSearchPage() {
+  return (
+    <Suspense fallback={<p className="text-center py-10 text-gray-500">Loading...</p>}>
+      <WordSearchPageInner />
+    </Suspense>
   );
 }

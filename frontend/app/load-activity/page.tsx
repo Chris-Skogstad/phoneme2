@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { APIURL } from "../lib/config";
 import PageHeading from "../components/PageHeading";
 import Button from "../components/Button";
@@ -15,6 +16,8 @@ type ActivitySummary = {
 };
 
 export default function LoadActivityPage() {
+  const router = useRouter();
+
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [wordSearches, setWordSearches] = useState<ActivitySummary[]>([]);
@@ -90,7 +93,7 @@ export default function LoadActivityPage() {
                       {ws.difficulty} · {ws.words.map((w) => w.text).join(", ")}
                     </p>
                   </div>
-                  <Button variant="secondary" onClick={() => alert(`Load ${ws.id} — coming next`)}>
+                  <Button variant="secondary" onClick={() => router.push(`/word-search?id=${ws.id}`)}>
                     Load
                   </Button>
                 </div>
@@ -117,7 +120,7 @@ export default function LoadActivityPage() {
                       {wl.difficulty} · {wl.words.map((w) => w.text).join(", ")}
                     </p>
                   </div>
-                  <Button variant="secondary" onClick={() => alert(`Load ${wl.id} — coming next`)}>
+                  <Button variant="secondary" onClick={() => router.push(`/wordle?id=${wl.id}`)}>
                     Load
                   </Button>
                 </div>
