@@ -9,8 +9,9 @@ import {
 } from "../lib/generateGrid";
 import { generateWordSearchHTML } from "../lib/generateWordSearchHTML";
 import { useLocale } from "../context/LocaleContext";
-import { wordSearchWordsByLocale } from "../lib/wordSearchWords";
+import { PhonemeWord } from "../lib/wordSearchWords";
 import { phonemeLegend } from "../lib/phonemeLegend";
+import { APIURL } from "../lib/config";
 import Button from "../components/Button";
 import Tooltip from "../components/Tooltip";
 import PhonemeTile from "../components/PhonemeTile";
@@ -23,17 +24,36 @@ const difficultyOptions = (Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map
 
 export default function WordSearchPage() {
   const { locale } = useLocale();
-  const wordSearchWords = wordSearchWordsByLocale[locale];
 
+  const [wordSearchWords, setWordSearchWords] = useState<PhonemeWord[]>([]);
+  const [wordsLoading, setWordsLoading] = useState(true);
   const [gridData, setGridData] = useState<WordSearchGrid | null>(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
 
+  // fetch words for the current locale from the backend
   useEffect(() => {
+    setWordsLoading(true);
+    fetch(`${APIURL}/api/words?locale=${locale}`)
+      .then((res) => res.json())
+      .then((data: { text: string; phonemes: string[] }[]) => {
+        const mapped: PhonemeWord[] = data.map((w) => ({
+          english: w.text,
+          phonemes: w.phonemes,
+        }));
+        setWordSearchWords(mapped);
+      })
+      .catch((err) => console.error("Error fetching words:", err))
+      .finally(() => setWordsLoading(false));
+  }, [locale]);
+
+  useEffect(() => {
+    if (wordSearchWords.length === 0) return;
     setGridData(generateGrid(wordSearchWords, DIFFICULTY_SETTINGS[difficulty].size));
-  }, [difficulty, locale]);
+  }, [difficulty, locale, wordSearchWords]);
 
   const handleRefresh = () => {
+    if (wordSearchWords.length === 0) return;
     setGridData(generateGrid(wordSearchWords, DIFFICULTY_SETTINGS[difficulty].size));
     setShowAnswers(false);
   };
@@ -50,10 +70,12 @@ export default function WordSearchPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (!gridData) {
+  if (wordsLoading || !gridData) {
     return (
       <main className="flex flex-col items-center py-10 px-4 min-h-screen bg-white dark:bg-gray-900 transition-colors">
-        <p className="text-gray-500">Generating word search...</p>
+        <p className="text-gray-500">
+          {wordsLoading ? "Loading words..." : "Generating word search..."}
+        </p>
       </main>
     );
   }
@@ -87,37 +109,34 @@ export default function WordSearchPage() {
         ))}
       </div>
 
-   <div
-  className="grid gap-1 mb-6 mx-auto w-full"
-  style={{
-    gridTemplateColumns: `repeat(${gridData.grid.length}, minmax(0, 1fr))`,
-    maxWidth: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
-  }}
->
-  {gridData.grid.map((row, r) =>
-    row.map((token, c) => {
-      const isAnswer = answerCellKeys.has(`${r}-${c}`);
-      return (
-        <PhonemeTile
-          key={`${r}-${c}`}
-          token={token}
-          state={isAnswer ? "answer" : "default"}
-          hint={phonemeLegend[token] ?? token}
-          size="responsive"
-        />
-      );
-    })
-  )}
-</div>
+      <div
+        className="grid gap-1 mb-6 mx-auto w-full"
+        style={{
+          gridTemplateColumns: `repeat(${gridData.grid.length}, minmax(0, 1fr))`,
+          maxWidth: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
+        }}
+      >
+        {gridData.grid.map((row, r) =>
+          row.map((token, c) => {
+            const isAnswer = answerCellKeys.has(`${r}-${c}`);
+            return (
+              <PhonemeTile
+                key={`${r}-${c}`}
+                token={token}
+                state={isAnswer ? "answer" : "default"}
+                hint={phonemeLegend[token] ?? token}
+                size="responsive"
+              />
+            );
+          })
+        )}
+      </div>
 
       <div className="flex gap-3 flex-wrap justify-center">
         <Button variant="secondary" onClick={handleRefresh}>
           Refresh
         </Button>
-        <Button
-          variant="warning"
-          onClick={() => setShowAnswers((prev) => !prev)}
-        >
+        <Button variant="warning" onClick={() => setShowAnswers((prev) => !prev)}>
           {showAnswers ? "Hide Answers" : "Show Answers"}
         </Button>
         <Button variant="primary" onClick={handleGenerate}>
