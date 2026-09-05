@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { wordleDifficultySettings, WordleDifficulty, WordleWord } from "../lib/wordleWords";
 import { evaluateGuess, computeKeyStates, GuessResult } from "../lib/wordleLogic";
 import { generateWordleHTML } from "../lib/generateWordleHTML";
@@ -24,14 +25,16 @@ const difficultyOptions = (
   Object.keys(wordleDifficultySettings) as WordleDifficulty[]
 ).map((key) => ({ value: key, label: wordleDifficultySettings[key].label }));
 
-export default function WordlePage() {
+function WordlePageInner() {
   const { locale } = useLocale();
+  const searchParams = useSearchParams();
+  const loadId = searchParams.get("id");
 
   const [creatorName, setCreatorName] = useState("");
-const [title, setTitle] = useState("");
-const [saving, setSaving] = useState(false);
-const [saveError, setSaveError] = useState<string | null>(null);
-const [saveSuccess, setSaveSuccess] = useState(false);
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [bankWords, setBankWords] = useState<BankWord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -52,11 +55,28 @@ const [saveSuccess, setSaveSuccess] = useState(false);
       .then((res) => res.json())
       .then((data: BankWord[]) => {
         setBankWords(data);
-        setSelectedId(data.length > 0 ? data[0].id : null); // default: first word
+        if (!loadId) {
+          setSelectedId(data.length > 0 ? data[0].id : null); // default: first word
+        }
       })
       .catch((err) => console.error("Error fetching words:", err))
       .finally(() => setWordsLoading(false));
-  }, [locale]);
+  }, [locale, loadId]);
+
+  // if loading a saved activity, fetch it and apply its target word/difficulty
+  useEffect(() => {
+    if (!loadId) return;
+    fetch(`${APIURL}/api/wordles?id=${loadId}`)
+      .then((res) => res.json())
+      .then((data: { title: string; difficulty: WordleDifficulty; words: { id: string }[] }) => {
+        setTitle(data.title);
+        setDifficulty(data.difficulty);
+        if (data.words.length > 0) {
+          setSelectedId(data.words[0].id);
+        }
+      })
+      .catch((err) => console.error("Error loading saved activity:", err));
+  }, [loadId]);
 
   const selectedWord: WordleWord | null = (() => {
     const w = bankWords.find((w) => w.id === selectedId);
@@ -65,10 +85,10 @@ const [saveSuccess, setSaveSuccess] = useState(false);
 
   // reset the game whenever the target or difficulty/locale changes
   useEffect(() => {
-  setGuesses([]);
-  setCurrentGuess([]);
-  setStatus("playing");
-}, [selectedId, difficulty, locale]);
+    setGuesses([]);
+    setCurrentGuess([]);
+    setStatus("playing");
+  }, [selectedId, difficulty, locale]);
 
   const selectWord = (id: string) => {
     setSelectedId(id);
@@ -82,48 +102,48 @@ const [saveSuccess, setSaveSuccess] = useState(false);
   };
 
   const handleSave = async () => {
-  setSaveError(null);
-  setSaveSuccess(false);
+    setSaveError(null);
+    setSaveSuccess(false);
 
-  if (!title.trim()) {
-    setSaveError("Please enter a title for this Wordle.");
-    return;
-  }
-  if (!creatorName.trim()) {
-    setSaveError("Please enter your name.");
-    return;
-  }
-  if (!selectedId) {
-    setSaveError("Select a target word first.");
-    return;
-  }
-
-  setSaving(true);
-  try {
-    const res = await fetch(`${APIURL}/api/wordles`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: title.trim(),
-        difficulty,
-        wordIds: [selectedId],
-        creatorName: creatorName.trim(),
-      }),
-    });
-
-    if (!res.ok) {
-      setSaveError(await res.text());
+    if (!title.trim()) {
+      setSaveError("Please enter a title for this Wordle.");
+      return;
+    }
+    if (!creatorName.trim()) {
+      setSaveError("Please enter your name.");
+      return;
+    }
+    if (!selectedId) {
+      setSaveError("Select a target word first.");
       return;
     }
 
-    setSaveSuccess(true);
-  } catch (err) {
-    console.error(err);
-    setSaveError("Could not reach the server.");
-  } finally {
-    setSaving(false);
-  }
-};
+    setSaving(true);
+    try {
+      const res = await fetch(`${APIURL}/api/wordles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          difficulty,
+          wordIds: [selectedId],
+          creatorName: creatorName.trim(),
+        }),
+      });
+
+      if (!res.ok) {
+        setSaveError(await res.text());
+        return;
+      }
+
+      setSaveSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setSaveError("Could not reach the server.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleBackspace = () => {
     if (status !== "playing") return;
@@ -320,5 +340,13 @@ const [saveSuccess, setSaveSuccess] = useState(false);
         </Button>
       </div>
     </main>
+  );
+}
+
+export default function WordlePage() {
+  return (
+    <Suspense fallback={<p className="text-center py-10 text-gray-500">Loading...</p>}>
+      <WordlePageInner />
+    </Suspense>
   );
 }
