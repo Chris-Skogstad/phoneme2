@@ -9,7 +9,6 @@ import {
 } from "../lib/generateGrid";
 import { generateWordSearchHTML } from "../lib/generateWordSearchHTML";
 import { useLocale } from "../context/LocaleContext";
-import { PhonemeWord } from "../lib/wordSearchWords";
 import { phonemeLegend } from "../lib/phonemeLegend";
 import { APIURL } from "../lib/config";
 import Button from "../components/Button";
@@ -18,6 +17,13 @@ import PhonemeTile from "../components/PhonemeTile";
 import DifficultySelector from "../components/DifficultySelector";
 import PageHeading from "../components/PageHeading";
 
+type BankWord = {
+  id: string;
+  text: string;
+  phonemes: string[];
+  hint: string | null;
+};
+
 const difficultyOptions = (Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map(
   (key) => ({ value: key, label: DIFFICULTY_SETTINGS[key].label })
 );
@@ -25,42 +31,58 @@ const difficultyOptions = (Object.keys(DIFFICULTY_SETTINGS) as Difficulty[]).map
 export default function WordSearchPage() {
   const { locale } = useLocale();
 
-  const [wordSearchWords, setWordSearchWords] = useState<PhonemeWord[]>([]);
+  const [bankWords, setBankWords] = useState<BankWord[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [wordsLoading, setWordsLoading] = useState(true);
+
   const [gridData, setGridData] = useState<WordSearchGrid | null>(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
 
-  // fetch words for the current locale from the backend
+  // fetch the word bank for this locale
   useEffect(() => {
     setWordsLoading(true);
     fetch(`${APIURL}/api/words?locale=${locale}`)
       .then((res) => res.json())
-      .then((data: { text: string; phonemes: string[] }[]) => {
-        const mapped: PhonemeWord[] = data.map((w) => ({
-          english: w.text,
-          phonemes: w.phonemes,
-        }));
-        setWordSearchWords(mapped);
+      .then((data: BankWord[]) => {
+        setBankWords(data);
+        setSelectedIds(new Set(data.map((w) => w.id))); // default: all selected
       })
       .catch((err) => console.error("Error fetching words:", err))
       .finally(() => setWordsLoading(false));
   }, [locale]);
 
+  const selectedWords = bankWords
+    .filter((w) => selectedIds.has(w.id))
+    .map((w) => ({ english: w.text, phonemes: w.phonemes }));
+
   useEffect(() => {
-    if (wordSearchWords.length === 0) return;
-    setGridData(generateGrid(wordSearchWords, DIFFICULTY_SETTINGS[difficulty].size));
-  }, [difficulty, locale, wordSearchWords]);
+    if (selectedWords.length === 0) {
+      setGridData(null);
+      return;
+    }
+    setGridData(generateGrid(selectedWords, DIFFICULTY_SETTINGS[difficulty].size));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [difficulty, locale, selectedIds, bankWords]);
+
+  const toggleWord = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleRefresh = () => {
-    if (wordSearchWords.length === 0) return;
-    setGridData(generateGrid(wordSearchWords, DIFFICULTY_SETTINGS[difficulty].size));
+    if (selectedWords.length === 0) return;
+    setGridData(generateGrid(selectedWords, DIFFICULTY_SETTINGS[difficulty].size));
     setShowAnswers(false);
   };
 
   const handleGenerate = () => {
     if (!gridData) return;
-    const html = generateWordSearchHTML(gridData, wordSearchWords);
+    const html = generateWordSearchHTML(gridData, selectedWords);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -70,18 +92,16 @@ export default function WordSearchPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (wordsLoading || !gridData) {
+  if (wordsLoading) {
     return (
       <main className="flex flex-col items-center py-10 px-4 min-h-screen bg-white dark:bg-gray-900 transition-colors">
-        <p className="text-gray-500">
-          {wordsLoading ? "Loading words..." : "Generating word search..."}
-        </p>
+        <p className="text-gray-500">Loading words...</p>
       </main>
     );
   }
 
   const answerCellKeys = new Set(
-    showAnswers
+    showAnswers && gridData
       ? gridData.placements.flatMap((p) => p.cells.map((c) => `${c.row}-${c.col}`))
       : []
   );
@@ -90,7 +110,7 @@ export default function WordSearchPage() {
     <main className="flex flex-col items-center py-10 px-4 min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <PageHeading
         title="Word Search Builder"
-        description="Preview the phoneme word search below, adjust difficulty, then download it as a standalone activity for students."
+        description="Pick which words to include, adjust difficulty, then download it as a standalone activity for students."
       />
 
       <DifficultySelector
@@ -99,47 +119,83 @@ export default function WordSearchPage() {
         onChange={setDifficulty}
       />
 
-      <div className="flex gap-4 flex-wrap justify-center mb-6">
-        {wordSearchWords.map((w) => (
-          <Tooltip key={w.english} label={w.english}>
-            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-md font-medium">
-              {w.phonemes.join(" ")}
-            </div>
-          </Tooltip>
-        ))}
+      <div className="w-full max-w-lg mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Words to include ({selectedIds.size} selected)
+        </h3>
+        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+          {bankWords.length === 0 && (
+            <p className="text-gray-500 text-sm">
+              No words in the bank yet for this locale — add some on the Word Bank page.
+            </p>
+          )}
+          {bankWords.map((w) => (
+            <label key={w.id} className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+              <input
+                type="checkbox"
+                checked={selectedIds.has(w.id)}
+                onChange={() => toggleWord(w.id)}
+              />
+              <span className="font-medium">{w.text}</span>
+              <span className="text-gray-500">({w.phonemes.join(" ")})</span>
+            </label>
+          ))}
+        </div>
       </div>
 
-      <div
-        className="grid gap-1 mb-6 mx-auto w-full"
-        style={{
-          gridTemplateColumns: `repeat(${gridData.grid.length}, minmax(0, 1fr))`,
-          maxWidth: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
-        }}
-      >
-        {gridData.grid.map((row, r) =>
-          row.map((token, c) => {
-            const isAnswer = answerCellKeys.has(`${r}-${c}`);
-            return (
-              <PhonemeTile
-                key={`${r}-${c}`}
-                token={token}
-                state={isAnswer ? "answer" : "default"}
-                hint={phonemeLegend[token] ?? token}
-                size="responsive"
-              />
-            );
-          })
-        )}
-      </div>
+      {selectedWords.length === 0 ? (
+        <p className="text-gray-500 mb-6">Select at least one word to generate a grid.</p>
+      ) : (
+        <>
+          <div className="flex gap-4 flex-wrap justify-center mb-6">
+            {selectedWords.map((w) => (
+              <Tooltip key={w.english} label={w.english}>
+                <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-md font-medium">
+                  {w.phonemes.join(" ")}
+                </div>
+              </Tooltip>
+            ))}
+          </div>
+
+          {gridData && (
+            <div
+              className="grid gap-1 mb-6 mx-auto w-full"
+              style={{
+                gridTemplateColumns: `repeat(${gridData.grid.length}, minmax(0, 1fr))`,
+                maxWidth: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
+              }}
+            >
+              {gridData.grid.map((row, r) =>
+                row.map((token, c) => {
+                  const isAnswer = answerCellKeys.has(`${r}-${c}`);
+                  return (
+                    <PhonemeTile
+                      key={`${r}-${c}`}
+                      token={token}
+                      state={isAnswer ? "answer" : "default"}
+                      hint={phonemeLegend[token] ?? token}
+                      size="responsive"
+                    />
+                  );
+                })
+              )}
+            </div>
+          )}
+        </>
+      )}
 
       <div className="flex gap-3 flex-wrap justify-center">
-        <Button variant="secondary" onClick={handleRefresh}>
+        <Button variant="secondary" onClick={handleRefresh} disabled={selectedWords.length === 0}>
           Refresh
         </Button>
-        <Button variant="warning" onClick={() => setShowAnswers((prev) => !prev)}>
+        <Button
+          variant="warning"
+          onClick={() => setShowAnswers((prev) => !prev)}
+          disabled={selectedWords.length === 0}
+        >
           {showAnswers ? "Hide Answers" : "Show Answers"}
         </Button>
-        <Button variant="primary" onClick={handleGenerate}>
+        <Button variant="primary" onClick={handleGenerate} disabled={!gridData}>
           Generate & Download
         </Button>
       </div>
