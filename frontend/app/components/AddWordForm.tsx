@@ -102,8 +102,8 @@ export default function AddWordForm({ onWordAdded }: Props) {
           <span className="text-gray-400 text-sm">Tap phonemes below to build the sequence</span>
         )}
         {phonemes.map((p, i) => (
-          <PhonemeTile key={i} token={p} state="default" size="responsive" />
-        ))}
+  <PhonemeTile key={i} token={p} state="default" size="md" />
+))}
       </div>
 
       <PhonemeKeyboard
