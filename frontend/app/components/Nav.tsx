@@ -8,6 +8,8 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/wordle", label: "Wordle" },
   { href: "/word-search", label: "Word Search" },
+  { href: "/word-bank", label: "Word Bank" },
+  { href: "/load-activity", label: "Load Activity" },
 ];
 
 export default function Nav() {
