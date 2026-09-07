@@ -24,12 +24,23 @@ export default function LoadActivityPage() {
   const [wordles, setWordles] = useState<ActivitySummary[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [confirmText, setConfirmText] = useState("");
+const [deleting, setDeleting] = useState(false);
+const [deleteError, setDeleteError] = useState<string | null>(null);
+
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   useEffect(() => {
     fetch(`${APIURL}/api/users`)
       .then((res) => res.json())
       .then(setUsers)
       .catch((err) => console.error("Error fetching users:", err));
   }, []);
+
+  useEffect(() => {
+  setShowDeleteConfirm(false);
+  setConfirmText("");
+  setDeleteError(null);
+}, [selectedUser]);
 
   useEffect(() => {
     if (!selectedUser) {
@@ -49,6 +60,38 @@ export default function LoadActivityPage() {
       .catch((err) => console.error("Error fetching activities:", err))
       .finally(() => setLoading(false));
   }, [selectedUser]);
+
+
+  const handleDeleteUser = async () => {
+  setDeleteError(null);
+
+  if (confirmText !== selectedUser) {
+    setDeleteError("Name doesn't match — type it exactly to confirm.");
+    return;
+  }
+
+  const user = users.find((u) => u.name === selectedUser);
+  if (!user) return;
+
+  setDeleting(true);
+  try {
+    const res = await fetch(`${APIURL}/api/users?id=${user.id}`, { method: "DELETE" });
+    if (!res.ok && res.status !== 204) {
+      setDeleteError(await res.text());
+      return;
+    }
+
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    setSelectedUser("");
+    setConfirmText("");
+    setShowDeleteConfirm(false);
+  } catch (err) {
+    console.error(err);
+    setDeleteError("Could not reach the server.");
+  } finally {
+    setDeleting(false);
+  }
+};
 
   return (
     <main className="flex flex-col items-center py-10 px-4 min-h-screen bg-white dark:bg-gray-900 transition-colors">
@@ -71,6 +114,43 @@ export default function LoadActivityPage() {
       </select>
 
       {loading && <p className="text-gray-500">Loading...</p>}
+
+{selectedUser && !showDeleteConfirm && (
+  <div className="w-full max-w-sm mb-8">
+    <Button variant="warning" onClick={() => setShowDeleteConfirm(true)}>
+      Delete Teacher
+    </Button>
+  </div>
+)}
+
+{selectedUser && showDeleteConfirm && (
+  <div className="w-full max-w-sm mb-8 p-3 border border-red-300 dark:border-red-800 rounded-md flex flex-col gap-2">
+    <p className="text-sm text-red-600 dark:text-red-400">
+      Deleting <strong>{selectedUser}</strong> also permanently deletes all of their saved word searches and Wordles (the shared word bank is unaffected). This can't be undone.
+    </p>
+    <input
+      type="text"
+      value={confirmText}
+      onChange={(e) => setConfirmText(e.target.value)}
+      placeholder={`Type "${selectedUser}" to confirm`}
+      className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      disabled={deleting}
+    />
+    <div className="flex gap-2">
+      <Button
+        variant="warning"
+        onClick={handleDeleteUser}
+        disabled={deleting || confirmText !== selectedUser}
+      >
+        {deleting ? "Deleting..." : "Confirm Delete"}
+      </Button>
+      <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+        Cancel
+      </Button>
+    </div>
+    {deleteError && <p className="text-red-500 text-sm">{deleteError}</p>}
+  </div>
+)}
 
       {selectedUser && !loading && (
         <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-8">
