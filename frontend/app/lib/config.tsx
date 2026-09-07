@@ -1,1 +1,1 @@
-export const APIURL = "http://ec2-32-192-252-241.compute-1.amazonaws.com:4080";
+export const APIURL = "http://ec2-44-222-215-159.compute-1.amazonaws.com:4080";
