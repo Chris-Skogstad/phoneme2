@@ -109,7 +109,7 @@ function WordlePageInner() {
       setSaveError("Please enter a title for this Wordle.");
       return;
     }
-    if (!creatorName.trim()) {
+    if (!loadId && !creatorName.trim()) {
       setSaveError("Please enter your name.");
       return;
     }
@@ -120,16 +120,26 @@ function WordlePageInner() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${getApiUrl()}/api/wordles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          difficulty,
-          wordIds: [selectedId],
-          creatorName: creatorName.trim(),
-        }),
-      });
+      const res = loadId
+        ? await fetch(`${getApiUrl()}/api/wordles?id=${loadId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              difficulty,
+              wordIds: [selectedId],
+            }),
+          })
+        : await fetch(`${getApiUrl()}/api/wordles`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              difficulty,
+              wordIds: [selectedId],
+              creatorName: creatorName.trim(),
+            }),
+          });
 
       if (!res.ok) {
         setSaveError(await res.text());
@@ -237,7 +247,9 @@ function WordlePageInner() {
         </div>
 
         <div className="w-full max-w-lg flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Save this Wordle</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            {loadId ? "Update this Wordle" : "Save this Wordle"}
+          </h3>
           <input
             type="text"
             value={title}
@@ -246,16 +258,18 @@ function WordlePageInner() {
             className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             disabled={saving}
           />
-          <input
-            type="text"
-            value={creatorName}
-            onChange={(e) => setCreatorName(e.target.value)}
-            placeholder="Your name"
-            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            disabled={saving}
-          />
+          {!loadId && (
+            <input
+              type="text"
+              value={creatorName}
+              onChange={(e) => setCreatorName(e.target.value)}
+              placeholder="Your name"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              disabled={saving}
+            />
+          )}
           <Button variant="primary" onClick={handleSave} disabled={saving || !selectedId}>
-            {saving ? "Saving..." : "Save Wordle"}
+            {saving ? "Saving..." : loadId ? "Update Wordle" : "Save Wordle"}
           </Button>
           {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
           {saveSuccess && <p className="text-green-500 text-sm">Saved!</p>}
