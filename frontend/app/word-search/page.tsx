@@ -117,60 +117,60 @@ function WordSearchPageInner() {
   };
 
   const handleSave = async () => {
-  setSaveError(null);
-  setSaveSuccess(false);
+    setSaveError(null);
+    setSaveSuccess(false);
 
-  if (!title.trim()) {
-    setSaveError("Please enter a title for this word search.");
-    return;
-  }
-  if (!loadId && !creatorName.trim()) {
-    setSaveError("Please enter your name.");
-    return;
-  }
-  if (selectedIds.size === 0) {
-    setSaveError("Select at least one word first.");
-    return;
-  }
-
-  setSaving(true);
-  try {
-    const res = loadId
-      ? await fetch(`${getApiUrl()}/api/word-searches?id=${loadId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            difficulty,
-            gridSize: DIFFICULTY_SETTINGS[difficulty].size,
-            wordIds: Array.from(selectedIds),
-          }),
-        })
-      : await fetch(`${getApiUrl()}/api/word-searches`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            difficulty,
-            gridSize: DIFFICULTY_SETTINGS[difficulty].size,
-            wordIds: Array.from(selectedIds),
-            creatorName: creatorName.trim(),
-          }),
-        });
-
-    if (!res.ok) {
-      setSaveError(await res.text());
+    if (!title.trim()) {
+      setSaveError("Please enter a title for this word search.");
+      return;
+    }
+    if (!loadId && !creatorName.trim()) {
+      setSaveError("Please enter your name.");
+      return;
+    }
+    if (selectedIds.size === 0) {
+      setSaveError("Select at least one word first.");
       return;
     }
 
-    setSaveSuccess(true);
-  } catch (err) {
-    console.error(err);
-    setSaveError("Could not reach the server.");
-  } finally {
-    setSaving(false);
-  }
-};
+    setSaving(true);
+    try {
+      const res = loadId
+        ? await fetch(`${getApiUrl()}/api/word-searches?id=${loadId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              difficulty,
+              gridSize: DIFFICULTY_SETTINGS[difficulty].size,
+              wordIds: Array.from(selectedIds),
+            }),
+          })
+        : await fetch(`${getApiUrl()}/api/word-searches`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              difficulty,
+              gridSize: DIFFICULTY_SETTINGS[difficulty].size,
+              wordIds: Array.from(selectedIds),
+              creatorName: creatorName.trim(),
+            }),
+          });
+
+      if (!res.ok) {
+        setSaveError(await res.text());
+        return;
+      }
+
+      setSaveSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setSaveError("Could not reach the server.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (wordsLoading) {
     return (
@@ -199,27 +199,58 @@ function WordSearchPageInner() {
         onChange={setDifficulty}
       />
 
-      <div className="w-full max-w-lg mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Words to include ({selectedIds.size} selected)
-        </h3>
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
-          {bankWords.length === 0 && (
-            <p className="text-gray-500 text-sm">
-              No words in the bank yet for this locale — add some on the Word Bank page.
-            </p>
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-start justify-items-center mt-6 mb-8">
+        <div className="w-full max-w-lg">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Words to include ({selectedIds.size} selected)
+          </h3>
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+            {bankWords.length === 0 && (
+              <p className="text-gray-500 text-sm">
+                No words in the bank yet for this locale — add some on the Word Bank page.
+              </p>
+            )}
+            {bankWords.map((w) => (
+              <label key={w.id} className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(w.id)}
+                  onChange={() => toggleWord(w.id)}
+                />
+                <span className="font-medium">{w.text}</span>
+                <span className="text-gray-500">({w.phonemes.join(" ")})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="w-full max-w-lg flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            {loadId ? "Update this word search" : "Save this word search"}
+          </h3>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title (e.g. 'Sh Sound Practice')"
+            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            disabled={saving}
+          />
+          {!loadId && (
+            <input
+              type="text"
+              value={creatorName}
+              onChange={(e) => setCreatorName(e.target.value)}
+              placeholder="Your name"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              disabled={saving}
+            />
           )}
-          {bankWords.map((w) => (
-            <label key={w.id} className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
-              <input
-                type="checkbox"
-                checked={selectedIds.has(w.id)}
-                onChange={() => toggleWord(w.id)}
-              />
-              <span className="font-medium">{w.text}</span>
-              <span className="text-gray-500">({w.phonemes.join(" ")})</span>
-            </label>
-          ))}
+          <Button variant="primary" onClick={handleSave} disabled={saving || selectedIds.size === 0}>
+            {saving ? "Saving..." : loadId ? "Update Word Search" : "Save Word Search"}
+          </Button>
+          {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
+          {saveSuccess && <p className="text-green-500 text-sm">Saved!</p>}
         </div>
       </div>
 
@@ -239,10 +270,10 @@ function WordSearchPageInner() {
 
           {gridData && (
             <div
-              className="grid gap-1 mb-6 mx-auto w-full"
+              className="grid gap-1 mb-6 mx-auto"
               style={{
                 gridTemplateColumns: `repeat(${gridData.grid.length}, minmax(0, 1fr))`,
-                maxWidth: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
+                width: `${gridData.grid.length * 36 + (gridData.grid.length - 1) * 4}px`,
               }}
             >
               {gridData.grid.map((row, r) =>
@@ -263,35 +294,6 @@ function WordSearchPageInner() {
           )}
         </>
       )}
-
-      <div className="w-full max-w-lg mb-6 flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-  {loadId ? "Update this word search" : "Save this word search"}
-</h3>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title (e.g. 'Sh Sound Practice')"
-          className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          disabled={saving}
-        />
-        {!loadId && (
-  <input
-    type="text"
-    value={creatorName}
-    onChange={(e) => setCreatorName(e.target.value)}
-    placeholder="Your name"
-    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-    disabled={saving}
-  />
-)}
-        <Button variant="primary" onClick={handleSave} disabled={saving || selectedIds.size === 0}>
-  {saving ? "Saving..." : loadId ? "Update Word Search" : "Save Word Search"}
-</Button>
-        {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
-        {saveSuccess && <p className="text-green-500 text-sm">Saved!</p>}
-      </div>
 
       <div className="flex gap-3 flex-wrap justify-center">
         <Button variant="secondary" onClick={handleRefresh} disabled={selectedWords.length === 0}>

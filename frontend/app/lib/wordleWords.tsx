@@ -6,9 +6,9 @@ export type WordleWord = {
 };
 
 export const wordleDifficultySettings = {
-  easy: { label: "Easy", maxGuesses: 6 },
+  easy: { label: "Easy", maxGuesses: 8 },
   medium: { label: "Medium", maxGuesses: 6 },
-  hard: { label: "Hard", maxGuesses: 6 },
+  hard: { label: "Hard", maxGuesses: 4 },
 } as const;
 
 export type WordleDifficulty = keyof typeof wordleDifficultySettings;
