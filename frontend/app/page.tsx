@@ -29,6 +29,16 @@ export default function Home() {
           href="/word-search"
         />
         <NavCard
+          title="Word Bank"
+          description="Add, edit, or remove words and their phonemes in the shared word bank."
+          href="/word-bank"
+        />
+        <NavCard
+          title="Load Activity"
+          description="Browse and reopen saved word searches and Wordles by teacher."
+          href="/load-activity"
+        />
+        <NavCard
           title="About"
           description="Learn more about this project and how to use it."
           href="/about"
