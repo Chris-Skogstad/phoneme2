@@ -40,6 +40,7 @@ function WordSearchPageInner() {
 
   const [gridData, setGridData] = useState<WordSearchGrid | null>(null);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [showHints, setShowHints] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
 
   const [creatorName, setCreatorName] = useState("");
@@ -68,17 +69,25 @@ function WordSearchPageInner() {
     if (!loadId) return;
     fetch(`${getApiUrl()}/api/word-searches?id=${loadId}`)
       .then((res) => res.json())
-      .then((data: { title: string; difficulty: Difficulty; words: { id: string }[] }) => {
-        setTitle(data.title);
-        setDifficulty(data.difficulty);
-        setSelectedIds(new Set(data.words.map((w) => w.id)));
-      })
+      .then(
+        (data: {
+          title: string;
+          difficulty: Difficulty;
+          words: { id: string }[];
+          outputSettings: { showHints?: boolean } | null;
+        }) => {
+          setTitle(data.title);
+          setDifficulty(data.difficulty);
+          setSelectedIds(new Set(data.words.map((w) => w.id)));
+          setShowHints(Boolean(data.outputSettings?.showHints));
+        }
+      )
       .catch((err) => console.error("Error loading saved activity:", err));
   }, [loadId]);
 
   const selectedWords = bankWords
     .filter((w) => selectedIds.has(w.id))
-    .map((w) => ({ english: w.text, phonemes: w.phonemes }));
+    .map((w) => ({ english: w.text, phonemes: w.phonemes, hint: w.hint }));
 
   useEffect(() => {
     if (selectedWords.length === 0) {
@@ -106,7 +115,7 @@ function WordSearchPageInner() {
 
   const handleGenerate = () => {
     if (!gridData) return;
-    const html = generateWordSearchHTML(gridData, selectedWords);
+    const html = generateWordSearchHTML(gridData, selectedWords, showHints);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -144,6 +153,7 @@ function WordSearchPageInner() {
               difficulty,
               gridSize: DIFFICULTY_SETTINGS[difficulty].size,
               wordIds: Array.from(selectedIds),
+              outputSettings: { showHints },
             }),
           })
         : await fetch(`${getApiUrl()}/api/word-searches`, {
@@ -155,6 +165,7 @@ function WordSearchPageInner() {
               gridSize: DIFFICULTY_SETTINGS[difficulty].size,
               wordIds: Array.from(selectedIds),
               creatorName: creatorName.trim(),
+              outputSettings: { showHints },
             }),
           });
 
@@ -222,6 +233,14 @@ function WordSearchPageInner() {
               </label>
             ))}
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-white mt-3">
+            <input
+              type="checkbox"
+              checked={showHints}
+              onChange={(e) => setShowHints(e.target.checked)}
+            />
+            Show word hints in downloaded activity
+          </label>
         </div>
 
         <div className="w-full max-w-lg flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">

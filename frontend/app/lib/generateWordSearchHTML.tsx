@@ -1,10 +1,16 @@
 import { WordSearchGrid } from "./generateGrid";
-import { PhonemeWord } from "./wordSearchWords";
 import { phonemeLegend } from "./phonemeLegend";
+
+type WordWithHint = {
+  english: string;
+  phonemes: string[];
+  hint?: string | null;
+};
 
 export function generateWordSearchHTML(
   gridData: WordSearchGrid,
-  words: PhonemeWord[]
+  words: WordWithHint[],
+  showHints: boolean = false
 ): string {
   const { grid, placements } = gridData;
 
@@ -23,13 +29,14 @@ export function generateWordSearchHTML(
   .cell-hint { display: none; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: black; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; white-space: nowrap; z-index: 10; }
   .cell:hover .cell-hint { display: block; }
   #words { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
-  .word-item { position: relative; padding: 6px 12px; background: #1f2937; border-radius: 6px; cursor: default; }
+  .word-item { position: relative; padding: 6px 12px; background: #1f2937; border-radius: 6px; cursor: default; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .word-item.found { background: #14532d; }
   .word-item .hint { display: none; position: absolute; left: 50%; transform: translateX(-50%); top: -28px; background: black; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; white-space: nowrap; }
   .word-item:hover .hint { display: block; }
   .word-item .answer { display: none; margin-left: 8px; font-weight: bold; color: #4ade80; }
   .word-item.found .answer { display: inline; }
   .word-item.found .phoneme-text { text-decoration: line-through; opacity: 0.7; }
+  .static-hint { font-size: 0.7rem; color: #9ca3af; font-style: italic; }
   #message { margin-top: 16px; font-size: 1.2rem; font-weight: bold; color: #16a34a; min-height: 1.5em; }
 </style>
 </head>
@@ -43,7 +50,9 @@ export function generateWordSearchHTML(
       (w) =>
         `<div class="word-item" data-word="${w.english}"><span class="phoneme-text">${w.phonemes.join(
           " "
-        )}</span><div class="hint">${w.english}</div><span class="answer">→ ${w.english}</span></div>`
+        )}</span><div class="hint">${w.english}</div><span class="answer">→ ${w.english}</span>${
+          showHints && w.hint ? `<span class="static-hint">Hint: ${w.hint}</span>` : ""
+        }</div>`
     )
     .join("")}
 </div>
@@ -121,7 +130,7 @@ export function generateWordSearchHTML(
 
     for (const placement of placements) {
       const placementKeys = placement.cells.map((c) => cellKey(c.row, c.col)).join(",");
-      if ((placementKeys === selectedKeys || placementKeys === reversedKeys) && !foundWords.has(placement.word)) {
+      if ((placementKeys === selectedKeys || placementKeys === reversedKeys) && !foundWords.has(placement.word)){
         foundWords.add(placement.word);
         placement.cells.forEach(({ row, col }) => {
           document.querySelector(\`.cell[data-row="\${row}"][data-col="\${col}"]\`).classList.add("found");

@@ -3,10 +3,13 @@ import { getPhonemeKeyboard } from "./phonemeKeyboard";
 import { phonemeLegend } from "./phonemeLegend";
 import { Locale } from "./locales";
 
+type WordleWordWithHint = WordleWord & { hint?: string | null };
+
 export function generateWordleHTML(
-  word: WordleWord,
+  word: WordleWordWithHint,
   maxGuesses: number,
-  locale: Locale
+  locale: Locale,
+  showHints: boolean = false
 ): string {
   const keyboardTokens = getPhonemeKeyboard(locale);
 
@@ -18,6 +21,7 @@ export function generateWordleHTML(
 <style>
   body { font-family: sans-serif; background: #111827; color: white; display: flex; flex-direction: column; align-items: center; padding: 24px; }
   h1 { margin-bottom: 16px; }
+  #hint { font-size: 0.9rem; color: #9ca3af; font-style: italic; margin-bottom: 12px; min-height: 1.2em; }
   #board { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
   .row { display: flex; gap: 4px; }
   .tile { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #1f2937; border: 2px solid #374151; border-radius: 4px; font-weight: bold; font-size: 1rem; }
@@ -45,6 +49,7 @@ export function generateWordleHTML(
 </head>
 <body>
 <h1>Phoneme Wordle</h1>
+${showHints && word.hint ? `<div id="hint">Hint: ${word.hint}</div>` : ""}
 <div id="board"></div>
 <div id="message"></div>
 <div id="keyboard"></div>
