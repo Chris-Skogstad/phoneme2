@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
@@ -48,9 +50,12 @@ export async function POST(request: NextRequest) {
     if (!title || typeof title !== 'string') {
       return new NextResponse('Missing or invalid "title"', { status: 400, headers: corsHeaders });
     }
-    if (!difficulty || typeof difficulty !== 'string') {
-      return new NextResponse('Missing or invalid "difficulty"', { status: 400, headers: corsHeaders });
-    }
+   if (!difficulty || typeof difficulty !== 'string' || !VALID_DIFFICULTIES.includes(difficulty)) {
+  return new NextResponse(
+    `"difficulty" must be one of: ${VALID_DIFFICULTIES.join(', ')}`,
+    { status: 400, headers: corsHeaders }
+  );
+}
     if (!Array.isArray(wordIds) || wordIds.length === 0) {
       return new NextResponse('"wordIds" must be a non-empty array', { status: 400, headers: corsHeaders });
     }
@@ -94,9 +99,16 @@ export async function PATCH(request: NextRequest) {
       return new NextResponse('Missing id', { status: 400, headers: corsHeaders });
     }
 
-    const { title, difficulty, wordIds, outputSettings } = await request.json();
+    const { title, difficulty, gridSize, wordIds, outputSettings } = await request.json();
 
-    const updated = await prisma.wordle.update({
+if (difficulty !== undefined && !VALID_DIFFICULTIES.includes(difficulty)) {
+  return new NextResponse(
+    `"difficulty" must be one of: ${VALID_DIFFICULTIES.join(', ')}`,
+    { status: 400, headers: corsHeaders }
+  );
+}
+
+const updated = await prisma.wordSearch.update({
       where: { id },
       data: {
         ...(title !== undefined && { title }),
