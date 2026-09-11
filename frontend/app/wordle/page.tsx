@@ -7,7 +7,7 @@ import { evaluateGuess, computeKeyStates, GuessResult } from "../lib/wordleLogic
 import { generateWordleHTML } from "../lib/generateWordleHTML";
 import { phonemeLegend } from "../lib/phonemeLegend";
 import { useLocale } from "../context/LocaleContext";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 import PageHeading from "../components/PageHeading";
 import DifficultySelector from "../components/DifficultySelector";
 import PhonemeTile from "../components/PhonemeTile";
@@ -51,7 +51,7 @@ function WordlePageInner() {
   // fetch the word bank for this locale
   useEffect(() => {
     setWordsLoading(true);
-    fetch(`${APIURL}/api/words?locale=${locale}`)
+    fetch(`${getApiUrl()}/api/words?locale=${locale}`)
       .then((res) => res.json())
       .then((data: BankWord[]) => {
         setBankWords(data);
@@ -66,7 +66,7 @@ function WordlePageInner() {
   // if loading a saved activity, fetch it and apply its target word/difficulty
   useEffect(() => {
     if (!loadId) return;
-    fetch(`${APIURL}/api/wordles?id=${loadId}`)
+    fetch(`${getApiUrl()}/api/wordles?id=${loadId}`)
       .then((res) => res.json())
       .then((data: { title: string; difficulty: WordleDifficulty; words: { id: string }[] }) => {
         setTitle(data.title);
@@ -120,7 +120,7 @@ function WordlePageInner() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${APIURL}/api/wordles`, {
+      const res = await fetch(`${getApiUrl()}/api/wordles`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

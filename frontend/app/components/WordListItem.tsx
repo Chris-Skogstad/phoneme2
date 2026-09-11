@@ -4,7 +4,7 @@ import { useState } from "react";
 import PhonemeTile from "./PhonemeTile";
 import PhonemeKeyboard from "./PhonemeKeyboard";
 import Button from "./Button";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 
 type Word = {
   id: string;
@@ -43,7 +43,7 @@ export default function WordListItem({ word, onChanged }: Props) {
     }
     setSaving(true);
     try {
-      const res = await fetch(`${APIURL}/api/words?id=${word.id}`, {
+      const res = await fetch(`${getApiUrl()}/api/words?id=${word.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text.trim().toUpperCase(), hint: hint.trim() || null, phonemes }),
@@ -65,7 +65,7 @@ export default function WordListItem({ word, onChanged }: Props) {
   const handleDelete = async () => {
     if (!confirm(`Delete "${word.text}" from the word bank?`)) return;
     try {
-      const res = await fetch(`${APIURL}/api/words?id=${word.id}`, { method: "DELETE" });
+      const res = await fetch(`${getApiUrl()}/api/words?id=${word.id}`, { method: "DELETE" });
       if (!res.ok && res.status !== 204) {
         alert(await res.text());
         return;

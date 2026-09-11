@@ -5,7 +5,7 @@ import AddWordForm from "../components/AddWordForm";
 import WordListItem from "../components/WordListItem";
 import PageHeading from "../components/PageHeading";
 import { useLocale } from "../context/LocaleContext";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 
 type Word = {
   id: string;
@@ -22,7 +22,7 @@ export default function WordBankPage() {
 
   const fetchWords = useCallback(() => {
     setLoading(true);
-    fetch(`${APIURL}/api/words?locale=${locale}`)
+    fetch(`${getApiUrl()}/api/words?locale=${locale}`)
       .then((res) => res.json())
       .then(setWords)
       .catch((err) => console.error("Error fetching words:", err))

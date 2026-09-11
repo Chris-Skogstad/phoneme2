@@ -5,7 +5,7 @@ import PhonemeKeyboard from "./PhonemeKeyboard";
 import PhonemeTile from "./PhonemeTile";
 import Button from "./Button";
 import { useLocale } from "../context/LocaleContext";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 
 type Props = {
   onWordAdded?: () => void;
@@ -43,7 +43,7 @@ export default function AddWordForm({ onWordAdded }: Props) {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${APIURL}/api/words`, {
+      const res = await fetch(`${getApiUrl()}/api/words`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

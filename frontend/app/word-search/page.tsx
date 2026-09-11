@@ -11,7 +11,7 @@ import {
 import { generateWordSearchHTML } from "../lib/generateWordSearchHTML";
 import { useLocale } from "../context/LocaleContext";
 import { phonemeLegend } from "../lib/phonemeLegend";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 import Button from "../components/Button";
 import Tooltip from "../components/Tooltip";
 import PhonemeTile from "../components/PhonemeTile";
@@ -51,7 +51,7 @@ function WordSearchPageInner() {
   // fetch the word bank for this locale
   useEffect(() => {
     setWordsLoading(true);
-    fetch(`${APIURL}/api/words?locale=${locale}`)
+    fetch(`${getApiUrl()}/api/words?locale=${locale}`)
       .then((res) => res.json())
       .then((data: BankWord[]) => {
         setBankWords(data);
@@ -66,7 +66,7 @@ function WordSearchPageInner() {
   // if loading a saved activity, fetch it and apply its selection/settings
   useEffect(() => {
     if (!loadId) return;
-    fetch(`${APIURL}/api/word-searches?id=${loadId}`)
+    fetch(`${getApiUrl()}/api/word-searches?id=${loadId}`)
       .then((res) => res.json())
       .then((data: { title: string; difficulty: Difficulty; words: { id: string }[] }) => {
         setTitle(data.title);
@@ -135,7 +135,7 @@ function WordSearchPageInner() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${APIURL}/api/word-searches`, {
+      const res = await fetch(`${getApiUrl()}/api/word-searches`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

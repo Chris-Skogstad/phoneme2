@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { APIURL } from "../lib/config";
+import { getApiUrl } from "../lib/config";
 import PageHeading from "../components/PageHeading";
 import Button from "../components/Button";
 
@@ -30,7 +30,7 @@ const [deleteError, setDeleteError] = useState<string | null>(null);
 
 const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   useEffect(() => {
-    fetch(`${APIURL}/api/users`)
+    fetch(`${getApiUrl()}/api/users`)
       .then((res) => res.json())
       .then(setUsers)
       .catch((err) => console.error("Error fetching users:", err));
@@ -50,8 +50,8 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     }
     setLoading(true);
     Promise.all([
-      fetch(`${APIURL}/api/word-searches?creator=${encodeURIComponent(selectedUser)}`).then((res) => res.json()),
-      fetch(`${APIURL}/api/wordles?creator=${encodeURIComponent(selectedUser)}`).then((res) => res.json()),
+      fetch(`${getApiUrl()}/api/word-searches?creator=${encodeURIComponent(selectedUser)}`).then((res) => res.json()),
+      fetch(`${getApiUrl()}/api/wordles?creator=${encodeURIComponent(selectedUser)}`).then((res) => res.json()),
     ])
       .then(([ws, wl]) => {
         setWordSearches(ws);
@@ -75,7 +75,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   setDeleting(true);
   try {
-    const res = await fetch(`${APIURL}/api/users?id=${user.id}`, { method: "DELETE" });
+    const res = await fetch(`${getApiUrl()}/api/users?id=${user.id}`, { method: "DELETE" });
     if (!res.ok && res.status !== 204) {
       setDeleteError(await res.text());
       return;
