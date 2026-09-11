@@ -39,6 +39,7 @@ function WordlePageInner() {
   const [bankWords, setBankWords] = useState<BankWord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wordsLoading, setWordsLoading] = useState(true);
+  const [showHints, setShowHints] = useState(false);
 
   const [difficulty, setDifficulty] = useState<WordleDifficulty>("medium");
   const [guesses, setGuesses] = useState<GuessResult[][]>([]);
@@ -68,19 +69,27 @@ function WordlePageInner() {
     if (!loadId) return;
     fetch(`${getApiUrl()}/api/wordles?id=${loadId}`)
       .then((res) => res.json())
-      .then((data: { title: string; difficulty: WordleDifficulty; words: { id: string }[] }) => {
-        setTitle(data.title);
-        setDifficulty(data.difficulty);
-        if (data.words.length > 0) {
-          setSelectedId(data.words[0].id);
+      .then(
+        (data: {
+          title: string;
+          difficulty: WordleDifficulty;
+          words: { id: string }[];
+          outputSettings: { showHints?: boolean } | null;
+        }) => {
+          setTitle(data.title);
+          setDifficulty(data.difficulty);
+          if (data.words.length > 0) {
+            setSelectedId(data.words[0].id);
+          }
+          setShowHints(Boolean(data.outputSettings?.showHints));
         }
-      })
+      )
       .catch((err) => console.error("Error loading saved activity:", err));
   }, [loadId]);
 
-  const selectedWord: WordleWord | null = (() => {
+  const selectedWord: (WordleWord & { hint?: string | null }) | null = (() => {
     const w = bankWords.find((w) => w.id === selectedId);
-    return w ? { english: w.text, phonemes: w.phonemes } : null;
+    return w ? { english: w.text, phonemes: w.phonemes, hint: w.hint } : null;
   })();
 
   // reset the game whenever the target or difficulty/locale changes
@@ -128,6 +137,7 @@ function WordlePageInner() {
               title: title.trim(),
               difficulty,
               wordIds: [selectedId],
+              outputSettings: { showHints },
             }),
           })
         : await fetch(`${getApiUrl()}/api/wordles`, {
@@ -138,6 +148,7 @@ function WordlePageInner() {
               difficulty,
               wordIds: [selectedId],
               creatorName: creatorName.trim(),
+              outputSettings: { showHints },
             }),
           });
 
@@ -186,7 +197,7 @@ function WordlePageInner() {
 
   const handleGenerate = () => {
     if (!selectedWord) return;
-    const html = generateWordleHTML(selectedWord, maxGuesses, locale);
+    const html = generateWordleHTML(selectedWord, maxGuesses, locale, showHints);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -244,6 +255,14 @@ function WordlePageInner() {
               </label>
             ))}
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-900 dark:text-white mt-3">
+            <input
+              type="checkbox"
+              checked={showHints}
+              onChange={(e) => setShowHints(e.target.checked)}
+            />
+            Show word hint in downloaded activity
+          </label>
         </div>
 
         <div className="w-full max-w-lg flex flex-col gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-md">
