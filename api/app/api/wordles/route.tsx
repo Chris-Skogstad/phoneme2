@@ -108,7 +108,7 @@ if (difficulty !== undefined && !VALID_DIFFICULTIES.includes(difficulty)) {
   );
 }
 
-const updated = await prisma.wordSearch.update({
+const updated = await prisma.wordle.update({
       where: { id },
       data: {
         ...(title !== undefined && { title }),
